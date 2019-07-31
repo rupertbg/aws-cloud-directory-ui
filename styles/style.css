@@ -1,0 +1,266 @@
+* {
+  font-family: monospace;
+}
+
+html, body {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  background: #111;
+  color: white;
+}
+
+body {
+  height: 100vh;
+  overflow: hidden;
+}
+
+header {
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: space-between;
+  background: #222;
+  padding: .75rem;
+  height: 3rem;
+}
+
+header h1 {
+  display: block;
+  line-height: 0;
+}
+
+header > div {
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: space-between;
+}
+
+header > div > div, header > div > button {
+  margin-left: .75rem;
+}
+
+button {
+  min-width: 8rem;
+  background: #444;
+  color: white;
+  cursor: pointer;
+  border: thin solid #555;
+  box-shadow: 1px 1px 2px 0 #000;
+}
+
+input {
+  margin: .2rem;
+  background: #444;
+  border: none;
+  color: #eee;
+  display: flex;
+  flex: 1;
+}
+
+.input-group {
+  margin: .5rem 0;
+}
+
+.input-group > div {
+  display: flex;
+  flex-flow: row nowrap;
+  align-items: center;
+  flex: 1;
+  line-height: 0;
+  padding: 0;
+  margin: 0;
+}
+
+button:hover {
+  box-shadow: 1px 2px 3px 0 #000;
+  background: #555;
+}
+
+button:active {
+  box-shadow: inset 0 1px 1px 0 #000;
+}
+
+button:disabled {
+  background: #888;
+  cursor: default;
+  color: #444;
+  box-shadow: none;
+}
+
+.button-group {
+  display: flex;
+  flex-flow: row nowrap;
+  user-select: none;
+  justify-content: flex-start;
+}
+
+.button-group button {
+  border-radius: 0;
+}
+
+.button-group button:first-of-type {
+  border-top-left-radius: 3px;
+  border-bottom-left-radius: 3px;
+}
+
+.button-group button:last-of-type {
+  border-top-right-radius: 3px;
+  border-bottom-right-radius: 3px;
+}
+
+.page-container {
+  width: 100vw;
+  position: relative;
+  height: calc(100vh - 3rem - 1.5rem);
+  display: flex;
+  flex: 1;
+}
+
+#sidebar {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-right: thin solid #222;
+  padding: 0.5rem;
+  box-shadow: 0 2px 4px 0 #000;
+  overflow: auto;
+}
+
+#sidebar > section {
+  position: relative;
+  border-bottom: thick solid #111;
+  background: #333;
+  overflow: auto;
+  padding: 0 0.5rem;
+}
+
+#sidebar > section.disabled {
+  user-select: none;
+  pointer-events: none;
+  opacity: 0.4;
+}
+
+#sidebar > section.hidden {
+  display: none;
+}
+
+#sidebar section:last-of-type {
+  border-bottom: none;
+}
+
+#sidebar #tabs {
+  background: none;
+  border-bottom: thick solid #222;
+  display: flex;
+  flex-flow: row wrap;
+  padding: 0;
+  align-self: flex-start;
+}
+
+#sidebar #tabs .tab {
+  user-select: none;
+  background: #444;
+  padding: 1rem;
+  margin: 0;
+  min-width: 0;
+  box-shadow: none;
+  border: thin solid #222;
+  line-height: 0;
+  opacity: 0.5;
+}
+
+#sidebar #tabs .tab h2 {
+  line-height: 0;
+  margin: 0;
+  padding: 0;
+}
+
+#sidebar #tabs .tab.active {
+  opacity: 1;
+}
+
+#sidebar h2 {
+  line-height: 1rem;
+}
+
+#sidebar .help h3 {
+  line-height: .75rem;
+  font-style: italic;
+}
+
+#sidebar p {
+  max-width: 30rem;
+}
+
+#sidebar button {
+  margin-bottom: .25rem;
+}
+
+#schema-details {
+  margin: 0;
+  padding: .5rem;
+  background: #222;
+}
+
+#schema-details .button-group {
+  margin-top: .5rem;
+}
+
+#schema-details h3 {
+  display: flex;
+  flex-flow: row nowrap;
+  align-items: center;
+  flex: 1;
+  line-height: 0;
+  padding: 0;
+  margin: 0;
+}
+
+#schema-details h3 input, #schema-details select {
+  margin: .2rem;
+  background: #444;
+  border: none;
+  color: #eee;
+  display: flex;
+  flex: 1;
+}
+
+#graph {
+  position: absolute;
+  right: 0;
+}
+
+#toast {
+  display: flex;
+  flex-flow: column;
+  align-items: flex-end;
+  position: fixed;
+  bottom: 0;
+  white-space: pre-wrap;
+  right: 0;
+  z-index: 99999;
+}
+
+.toasty {
+  background: black;
+  color: white;
+  padding: 0.5rem;
+  margin: 0.5rem;
+  border-radius: 3px;
+  border: thin solid #444;
+}
+
+.google-login {
+  background: black;
+}
+
+.editor {
+  min-width: 40rem;
+  font-size: 12pt;
+  margin: 1rem 0;
+  border: thin dotted #444;
+}
+
+#schema-editor {
+  min-height: 50%;
+}

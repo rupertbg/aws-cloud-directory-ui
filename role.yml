@@ -1,0 +1,78 @@
+Description: IAM Role for https://github.com/rupertbg/aws-cloud-directory-ui
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: Google Account
+        Parameters:
+          - GoogleAud
+          - GoogleSub
+    ParameterLabels:
+      GoogleAud:
+        default: Enter your App's Client ID
+      GoogleSub:
+        default: Enter your Google User ID
+
+Parameters:
+
+  GoogleAud:
+    Type: String
+    Description: >-
+      If you want to use https://rupertbg.github.io/aws-cloud-directory-ui/ then leave this as default.
+      Otherwise, get one here: https://developers.google.com/identity/sign-in/web/sign-in#before_you_begin
+      e.g. 12345678-cgfhcg1hc23ghc12g3hc1hg2.apps.googleusercontent.com
+    Default: 441112355042-uc07t7cn3liql0d9i790bp29n3bjuias.apps.googleusercontent.com
+
+  GoogleSub:
+    Type: String
+    Description: >-
+      Find it here: https://developers.google.com/gmail/api/v1/reference/users/getProfile#try-it
+      e.g. 123456789012345678901
+
+Resources:
+
+  FederationRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Path: /
+      RoleName: !Ref AWS::StackName
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action: sts:AssumeRoleWithWebIdentity
+            Principal:
+              Federated: accounts.google.com
+            Condition:
+              StringEquals:
+                accounts.google.com:aud: !Ref GoogleAud
+                accounts.google.com:sub: !Ref GoogleSub
+      Policies:
+        - PolicyName: !Ref AWS::StackName
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - clouddirectory:ListDevelopmentSchemaArns
+                  - clouddirectory:PutSchemaFromJson
+                  - clouddirectory:ListPublishedSchemaArns
+                  - clouddirectory:ListDirectories
+                  - clouddirectory:CreateSchema
+                Resource: '*'
+              - Effect: Allow
+                Action: clouddirectory:*
+                Resource:
+                  - arn:aws:clouddirectory:*:*:directory/*/schema/*/*
+                  - arn:aws:clouddirectory:*:*:schema/published/*/*
+                  - arn:aws:clouddirectory:*:*:schema/development/*
+                  - arn:aws:clouddirectory:*:*:schema/managed/*
+              - Effect: Allow
+                Action: clouddirectory:*
+                Resource: arn:aws:clouddirectory:*:*:directory/*
+
+Outputs:
+  FederationRole:
+    Description: ARN of Role
+    Value: !GetAtt FederationRole.Arn

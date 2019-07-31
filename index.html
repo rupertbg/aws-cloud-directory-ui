@@ -1,0 +1,135 @@
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Cache-control" content="no-cache" />
+  <meta http-equiv="Expires" content="-1" />
+  <meta name="google" content="notranslate">
+  <meta name="google-signin-scope" content="profile email">
+  <meta id="google-client-id" name="google-signin-client_id" content="">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.css" integrity="sha256-p6xU9YulB7E2Ic62/PX+h59ayb3PBJ0WFTEQxq0EjHw=" crossorigin="anonymous" />
+  <link rel="stylesheet" href="styles/style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.5/ace.js" integrity="sha256-5Xkhn3k/1rbXB+Q/DX/2RuAtaB4dRRyQvMs83prFjpM=" crossorigin="anonymous"></script>
+  <script src="//unpkg.com/force-graph"></script>
+  <script src="scripts/aws-sdk-2.478.0.min.js"></script>
+  <script src="scripts/utils.js"></script>
+  <script src="scripts/local-storage.js"></script>
+  <script src="scripts/cloud-directory/client.js"></script>
+  <script src="scripts/cloud-directory/ide.js"></script>
+  <script src="scripts/ui.js"></script>
+  <script src="https://apis.google.com/js/platform.js" async defer></script>
+</head>
+
+<body>
+  <header id="header">
+    <h1>Amazon Cloud Directory IDE</h1>
+    <div>
+      <div class="g-signin2 google-login" data-onsuccess="onSignIn" data-theme="dark"></div>
+      <button id="reset" onclick="startOver()">Reset Config</button>
+    </div>
+  </header>
+  <div class="page-container">
+    <nav id="sidebar">
+      <section id="tabs">
+        <button class="tab active schema" onclick="tabClick('schema')"><h2>Schema</h2></button>
+        <button class="tab directory" onclick="tabClick('directory')"><h2 >Directory</h2></button>
+        <button class="tab config" onclick="tabClick('config')"><h2 >Config</h2></button>
+        <button class="tab help" onclick="tabClick('help')"><h2 >Help</h2></button>
+      </section>
+      <div id="schema-details">
+        <h3 id="schema-name"><span>Namespace: </span><input readonly></input></h3>
+        <h3 id="schema-mode">
+          <span>State: </span>
+          <select onchange="switchSchema()">
+            <option value="Development">DEVELOPMENT</option>
+            <option value="Published">PUBLISHED</option>
+            <option value="Applied">APPLIED</option>
+          </select>
+        </h3>
+        <h3 id="schema-versions">Version: <select onchange="switchSchemaVersion()"></select></h3>
+      </div>
+      <section id="schema-section" class="schema">
+        <h2>Editor</h2>
+        <div class="button-group">
+          <button id="get-schema" onclick="getSchema()">Get Schema</button>
+          <button id="put-schema" class="schema-dev-only" onclick="putSchema()" disabled>Put Schema</button>
+          <button id="publish-schema" class="schema-dev-only" onclick="publishSchema()" disabled>Publish / Upgrade</button>
+          <button id="delete-schema-version" onclick="deleteSchemaVersion()" disabled class="schema-pub-only">Delete Version</button>
+          <button id="apply-schema" class="schema-pub-only" onclick="applySchema()" disabled>Apply</button>
+        </div>
+        <div id="schema-editor" class="editor"></div>
+      </section>
+      <section class="directory hidden">
+        <h2>Objects</h2>
+        <div class="input-group">
+          <div>
+            <label for="object-name">Name: </label>
+            <input id="object-name" type="text" name="object-name" autocomplete="object-name" />
+          </div>
+          <div>
+            <label for="object-link">Link: </label>
+            <input id="object-link" type="text" name="object-link" autocomplete="object-link" />
+          </div>
+          <div>
+            <label for="object-parent">Parent: </label>
+            <input id="object-parent" type="text" name="object-parent" autocomplete="object-parent" value="/" />
+          </div>
+        </div>
+        <div class="button-group">
+          <button id="list-objects" onclick="listObjects()">List Objects</button>
+          <button id="put-object" name="put-object" onclick="createObject($('#object-name').val())">Put Object</button>
+        </div>
+        <div id="object-list" class="editor"></div>
+      </section>
+      <section class="directory hidden">
+        <h2>Facets</h2>
+        <div class="button-group">
+          <button id="list-facets" onclick="listFacets()">List Facets</button>
+          <button id="put-facets" name="put-facets" onclick="putFacets()">Put Facets</button>
+        </div>
+        <div id="facet-list" class="editor"></div>
+      </section>
+      <section class="directory hidden">
+        <h2>Typed Link Facets</h2>
+        <div class="button-group">
+          <button id="list-typed-link-list" onclick="listTypedLinks()">List Typed Links</button>
+          <button id="put-typed-link-list" name="put-facets" onclick="putTypedLinks()">Put Typed Links</button>
+        </div>
+        <div id="typed-link-list" class="editor"></div>
+      </section>
+      <section class="config hidden">
+        <h2>Local Config</h2>
+        <p>Modifying these values may not invoke changes in the application. Values may be overwritten at any time.</p>
+        <div class="button-group">
+          <button id="get-config" onclick="getStore()">Get Config</button>
+          <button id="put-config" onclick="putStore()">Put Config</button>
+        </div>
+        <div id="config-editor" class="editor"></div>
+      </section>
+      <section class="help hidden">
+        <h2>Help</h2>
+        <h3>Namespace</h3>
+        <p>
+          Your namespace is your Google ID.
+          This is used to generate resource names in AWS while preventing clashes when multiple users have the same AWS Account ID and/or Role.
+        </p>
+        <h3>Schema Editor</h3>
+        <p>
+          The Schema Editor uses the <i>getSchemaAsJson</i> and <i>putSchemaFromJson</i> APIs to allow you to directly edit your schemas.
+          Most changes can only occur against the development state of your Schema.
+          You can change state via the "Switch State" button.
+        </p>
+        <p>
+          Publishing a development Schema is done via the "Publish / Upgrade" button.
+          If you already have an existing published Schema an in-place upgrade will occur, with a new Minor Version being created.
+        </p>
+      </section>
+    </nav>
+    <div id="graph"></div>
+    <div id="toast"></div>
+  </div>
+</body>
+
+</html>
