@@ -1,5 +1,5 @@
 # Cloud Directory IDE
-⚠ Early Access Alpha ⚠
+## ⚠📈 [WIP on Github Pages](https://rupertbg.github.io/aws-cloud-directory-ui/) 📊⚠
 
 ## Overview
 A __client-side__ IDE for working with AWS Cloud Directory in your browser. There is no backend other than your own [AWS Cloud Directory](https://docs.aws.amazon.com/clouddirectory/latest/developerguide/what_is_cloud_directory.html) and [Google Sign In](https://developers.google.com/identity/sign-in/web/sign-in#before_you_begin).
