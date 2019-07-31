@@ -12,6 +12,7 @@ async function initIde() {
   if (existingDirectory) userDirectory = existingDirectory;
   await initSchema();
   await findExistingDirectory();
+  saveConfig();
 }
 
 async function initSchema() {
@@ -154,11 +155,15 @@ async function findExistingDirectory() {
      userDirectory.DefinitionSchema = `arn:aws:clouddirectory:${localConfig.aws.region}:${localConfig.aws.accountId}:directory/${userDirectory.Id}/schema/CloudDirectory/1.0`;
      toast('Retrieved schema details');
 
-     await getSchema();
-     await listObjects();
-     await listFacets();
-     await updateGraphData();
+     refreshData();
    };
+}
+
+async function refreshData() {
+  await getSchema();
+  await listObjects();
+  await listFacets();
+  await updateGraphData();
 }
 
 async function getSchema() {
@@ -262,6 +267,19 @@ async function publishSchema(majorVersion, minorVersion) {
 
 async function applySchema() {
   try {
+    if (userDirectory.Schemas.Applied.Latest.Minor) {
+      const schemaArn = userDirectory.Schemas.Published.Latest.Minor;
+      upgradeSchema = await clouddirectory('upgradeAppliedSchema', {
+        DirectoryArn: userDirectory.DirectoryArn,
+        PublishedSchemaArn: schemaArn
+      });
+
+      if (!(upgradeSchema && upgradeSchema.UpgradedSchemaArn)) throw 'Invalid response';
+      toast(`Upgraded Applied schema: ${upgradeSchema.UpgradedSchemaArn}`, 'lightgreen');
+      await getAppliedSchemaVersions();
+      schemaEditor.clearSelection();
+      switchSchema('Applied');
+    }
     if (userDirectory.Schemas.Published.Latest.Minor) {
       const schemaArn = userDirectory.Schemas.Published.Latest.Minor;
       var appliedSchema;
@@ -289,18 +307,23 @@ async function applySchema() {
 }
 
 async function switchSchema(newState) {
+  const current = userDirectory.Schemas.Current;
   if (newState) {
     userDirectory.Schemas.Current = newState;
     $('#schema-mode select').val(newState);
   }
   else userDirectory.Schemas.Current = $('#schema-mode select option:selected').val();
-  await getSchema();
+  if (current !== userDirectory.Schemas.Current) refreshData();
 }
 
-async function switchSchemaVersion() {
-  const currentVersion = userDirectory.Schemas.Selected;
-  userDirectory.Schemas.Selected = $('#schema-versions select option:selected').val();
-  if (currentVersion !== userDirectory.Schemas.Selected) await getSchema();
+async function switchSchemaVersion(newVersion) {
+  const current = userDirectory.Schemas.Selected;
+  if (newVersion) {
+    userDirectory.Schemas.Selected = newVersion;
+    $('#schema-versions select option:selected').val(newVersion);
+  }
+  else userDirectory.Schemas.Selected = $('#schema-versions select option:selected').val();
+  if (current !== userDirectory.Schemas.Selected) refreshData();
 }
 
 async function deleteSchemaVersion() {
@@ -327,7 +350,7 @@ async function listFacets() {
   facetList.setValue('');
   var facets = []
   try {
-    const schemaArn = userDirectory.Schemas[userDirectory.Schemas.Current].Latest.Minor;
+    const schemaArn = userDirectory.Schemas.Selected;
     const listNames = await clouddirectory('listFacetNames', {
       SchemaArn: schemaArn
     });
@@ -348,6 +371,7 @@ async function listFacets() {
     facetList.setValue(JSON.stringify(facets, null, 2));
     facetList.clearSelection();
     userDirectory.Facets = facets;
+    generateObjectFacetNames();
   }
   catch (e) {
     console.error(e);
@@ -515,7 +539,12 @@ async function listObjects() {
       }
     });
     toast('Retrieved children of /', 'lightgreen');
-    dir.Children.concat(resp.Children);
+    dir.Children = dir.Children.concat(
+      Object.keys(resp.Children).map(x => ({
+        id: resp.Children[x],
+        name: x
+      })
+    ));
     objectList.setValue(JSON.stringify(dir, null, 2));
     objectList.clearSelection();
     return dir;
@@ -526,24 +555,18 @@ async function listObjects() {
   }
 }
 
-async function createObject(name, link = $('#object-link').val(), parent = $('#object-parent').val()) {
+async function createObject() {
   try {
+    const name = $('#object-name').val();
+    const facet = $('#object-facet-select option:selected').val();
+    const link = $('#object-link').val();
+    const parent = $('#object-parent').val();
     const schemaArn =  userDirectory.Schemas[userDirectory.Schemas.Current].Latest.Major;
     await clouddirectory('createObject', {
       DirectoryArn: userDirectory.DirectoryArn,
       SchemaFacets: [{
-        FacetName: 'DynamicObjectFacet',
+        FacetName: facet,
         SchemaArn: schemaArn
-      }],
-      ObjectAttributeList: [{
-        Key: {
-          FacetName: 'DynamicTypedLinkAttribute',
-          Name: 'Name',
-          SchemaArn: schemaArn
-        },
-        Value: {
-          StringValue: name
-        }
       }],
       LinkName: link || name,
       ParentReference: {
@@ -577,12 +600,96 @@ async function addTypedLink(name) {
   });
 };
 
-async function updateGraphData() {
-  const nodes = await listObjects();
-  console.log(nodes)
-  forceGraph.graphData({
-    nodes: nodes,
+function generateRandomGraphData() {
+  let nodes = [{
+    name: 'root',
+    path: '/',
+    size: 100,
+    level: 1
+  }]
+  let links = [];
+  const num = 100;
+  for (var i = 0; i < num; i++) {
+    const parent = nodes[Math.floor(Math.random()*nodes.length)];
+    const path = `${parent.path}${Math.floor(Math.random() * num)}/`;
+    const size = Math.floor(Math.random() * 100);
+    const levels = path.split('/');
+    const level = levels.length - 1;
+    const leaf = levels.pop();
+    if (!nodes.find(n => n.path === path)) {
+      parent.children++;
+      const node = {
+        path,
+        leaf,
+        size,
+        children: 0,
+        level
+      };
+      nodes.push(node)
+      links.push({
+        source: parent.path,
+        target: path,
+        targetNode: node
+      });
+    }
+  }
+  return {
+    nodes,
+    links
+  }
+}
+
+function validateObject(obj) {
+  return obj && obj.Name && obj.Path;
+}
+
+function convertObjectToGraphNode(obj) {
+  let levels = obj.Path.split('/');
+  return {
+    name: obj.Name,
+    path: obj.Path,
+    level: levels.length - 1,
+    leaf: levels.pop(),
+    parent: levels.join('/'),
+    size: obj.Children.length
+  }
+}
+
+function objectsToGraphData(dir) {
+  let data = {
+    nodes: [],
     links: []
-  });
+  };
+  if (!Array.isArray(dir)) {
+    data.nodes.push(convertObjectToGraphNode(dir));
+    const childData = objectsToGraphData(dir.Children);
+    data.nodes = data.nodes.concat(childData.nodes);
+    data.links = data.links.concat(childData.links);
+  }
+  else {
+    for (let obj of dir) {
+      if (validateObject(obj)) {
+        const node = convertObjectToGraphNode(obj);
+        data.nodes.push(node);
+        data.links.push({
+          source: node.parent,
+          target: node.path,
+          targetNode: node
+        });
+        if (obj.Children) {
+          const childData = objectsToGraphNodes(obj.Children);
+          data.nodes = data.nodes.concat(childData.nodes);
+          data.links = data.links.concat(childData.links);
+        }
+      }
+    }
+  }
+  return data;
+}
+
+async function updateGraphData() {
+  const dir = await listObjects();
+  const data = objectsToGraphData(dir);
+  forceGraph.graphData(data);
   $(window).resize();
 }

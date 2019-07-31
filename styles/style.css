@@ -221,7 +221,7 @@ button:disabled {
   margin: 0;
 }
 
-#schema-details h3 input, #schema-details select {
+#sidebar input, #sidebar select {
   margin: .2rem;
   background: #444;
   border: none;
@@ -244,9 +244,11 @@ button:disabled {
   white-space: pre-wrap;
   right: 0;
   z-index: 99999;
+  pointer-events: none;
 }
 
 .toasty {
+  pointer-events:auto;
   background: black;
   color: white;
   padding: 0.5rem;

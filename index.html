@@ -12,8 +12,11 @@
   <link rel="stylesheet" href="styles/style.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.5/ace.js" integrity="sha256-5Xkhn3k/1rbXB+Q/DX/2RuAtaB4dRRyQvMs83prFjpM=" crossorigin="anonymous"></script>
-  <script src="//unpkg.com/force-graph"></script>
-  <script src="scripts/aws-sdk-2.478.0.min.js"></script>
+  <script src="scripts/lib/d3-dsv.min.js"></script>
+  <script src="scripts/lib/d3-force.min.js"></script>
+  <script src="scripts/lib/d3-quadtree.min.js"></script>
+  <script src="scripts/lib/force-graph.min.js"></script>
+  <script src="scripts/lib/aws-sdk-2.478.0.min.js"></script>
   <script src="scripts/utils.js"></script>
   <script src="scripts/local-storage.js"></script>
   <script src="scripts/cloud-directory/client.js"></script>
@@ -29,6 +32,7 @@
     <div>
       <a class="github-button" href="https://github.com/rupertbg/aws-cloud-directory-ui" data-icon="octicon-star" data-size="large" data-show-count="true" aria-label="Star rupertbg/aws-cloud-directory-ui on GitHub">Star</a>
       <a class="github-button" href="https://github.com/rupertbg/aws-cloud-directory-ui/issues" data-icon="octicon-issue-opened" data-size="large" data-show-count="true" aria-label="Issue rupertbg/aws-cloud-directory-ui on GitHub">Issue</a>
+      <button onclick="forceGraph.graphData(generateRandomGraphData())">Generate Random Graph Data</button>
       <button id="reset" onclick="startOver()">Reset Config</button>
       <div class="g-signin2 google-login" data-onsuccess="onSignIn" data-theme="dark"></div>
     </div>
@@ -72,6 +76,10 @@
             <input id="object-name" type="text" name="object-name" autocomplete="object-name" />
           </div>
           <div>
+            <label for="object-facet">Facet: </label>
+            <select id="object-facet-select"></select>
+          </div>
+          <div>
             <label for="object-link">Link: </label>
             <input id="object-link" type="text" name="object-link" autocomplete="object-link" />
           </div>
@@ -82,7 +90,7 @@
         </div>
         <div class="button-group">
           <button id="list-objects" onclick="listObjects()">List Objects</button>
-          <button id="put-object" name="put-object" onclick="createObject($('#object-name').val())">Put Object</button>
+          <button id="put-object" name="put-object" onclick="createObject()">Put Object</button>
         </div>
         <div id="object-list" class="editor"></div>
       </section>

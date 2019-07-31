@@ -55,12 +55,26 @@ function tabClick(tab) {
 };
 
 function generateSchemaVersions(versions) {
-  $('#schema-versions select').empty();
-  for (v of versions) {
-    const nsRegEx = new RegExp(`(${localConfig.namespace}.*)`);
-    const shortName = v.split(nsRegEx)[1];
-    const option = `<option value="${v}">${shortName}</option>`;
-    $('#schema-versions select').append(option);
+  const existingVersions = $('#schema-versions select option').map(function() {
+    return $(this).val();
+  }).get();
+  if (!versions.every(v => existingVersions.find(eV => v === eV))) {
+    $('#schema-versions select').empty();
+    for (v of versions) {
+      const nsRegEx = new RegExp(`(${localConfig.namespace}.*)`);
+      const shortName = v.split(nsRegEx)[1];
+      const option = `<option value="${v}">${shortName}</option>`;
+      $('#schema-versions select').append(option);
+    };
+    switchSchemaVersion();
+  }
+};
+
+function generateObjectFacetNames() {
+  $('#object-facet-select').empty();
+  for (facet of userDirectory.Facets) {
+    const option = `<option value="${facet.Name}">${facet.Name}</option>`;
+    $('#object-facet-select').append(option);
   };
   switchSchemaVersion();
 };
@@ -100,6 +114,36 @@ function escForTabOnEditor(editor) {
   });
 }
 
+function initForceGraph() {
+  const nodeSize = 1
+  forceGraph($('#graph')[0])
+    .dagMode('td')
+    .dagLevelDistance(150)
+    .backgroundColor('#101020')
+    .linkColor(() => 'rgba(255,255,255,0.2)')
+    .nodeRelSize(nodeSize)
+    .nodeId('path')
+    .nodeVal('size')
+    .nodeLabel('path')
+    .nodeAutoColorBy(n => n.level)
+    .linkDirectionalParticles(l => l.targetNode.children)
+    .linkDirectionalParticleWidth(5)
+    .d3Force('collision',
+      d3.forceCollide(10 * nodeSize)
+      .iterations(5)
+    )
+    .d3Force('links',
+      d3.forceLink()
+      .iterations(5)
+    )
+    .d3Force('charge',
+      d3.forceManyBody()
+    )
+    .d3VelocityDecay(0.1);
+
+  $(window).resize(calcGraphDimensions);
+}
+
 function onReady() {
   $('#object-name').on('keyup', catchEnter(createObject));
   $('#add-typed-link').on('keyup', catchEnter(addTypedLink));
@@ -116,16 +160,8 @@ function onReady() {
   configEditor = ace.edit('config-editor', editorOptions);
   escForTabOnEditor(configEditor);
 
-  forceGraph($('#graph')[0])
-    .nodeId('Path')
-    .nodeVal('Name')
-    .nodeLabel('Name')
-    .nodeAutoColorBy('Name')
-    // .linkSource('source')
-    // .linkTarget('target')
-    // .linkAutoColorBy('group')
-  $(window).resize(calcGraphDimensions);
-  setInterval(calcGraphDimensions, 1000);
+  initForceGraph();
+
   $(window).resize();
 
   checkConfig();
