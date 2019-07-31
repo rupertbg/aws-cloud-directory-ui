@@ -52,6 +52,7 @@ function tabClick(tab) {
   if (tab == 'directory' && !(userDirectory && userDirectory.DirectoryArn))
     toast('No directory loaded. Apply a schema to initialize your directory', 'yellow');
   if (tab == 'config') getStore();
+  $(window).resize();
 };
 
 function generateSchemaVersions(versions) {
