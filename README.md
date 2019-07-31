@@ -5,12 +5,12 @@
 A __client-side__ IDE for working with AWS Cloud Directory in your browser. There is no backend other than your own [AWS Cloud Directory](https://docs.aws.amazon.com/clouddirectory/latest/developerguide/what_is_cloud_directory.html) and [Google Sign In](https://developers.google.com/identity/sign-in/web/sign-in#before_you_begin).
 
 ## Setup
-To get the UI working with your AWS Account deploy `role.yml` via CloudFormation. The parameters requested are so that you can easily log into a secure Role from your Browser.
+To get the UI working with your AWS Account deploy `role.yml` via CloudFormation. Using [AssumeRoleWithWebIdentity](https://docs.aws.amazon.com/STS/latest/APIReference/API_AssumeRoleWithWebIdentity.html), the app uses a Google Account of your choosing to assume the Role you create in your account.
 
 1. Decide whether to run locally or use the [Github Pages version](https://rupertbg.github.io/aws-cloud-directory-ui/).
-2. If running locally set up Google Sign In [here](https://developers.google.com/identity/sign-in/web/sign-in#before_you_begin).
+2. If running locally set up Google Sign In [here](https://developers.google.com/identity/sign-in/web/sign-in#before_you_begin). Skip this step if you're using the Github Pages Version.
 3. Deploy `role.yml` in your AWS account.
-4. Enter the Role ARN when requested.
+4. Enter the AWS IAM Role ARN and Region when requested. If running locally you will first need to enter the Google Client ID you created above.
 
 You can make your own Google Sign In and use the app locally, or run it directly using mine from [Github Pages](https://rupertbg.github.io/aws-cloud-directory-ui/)
 
