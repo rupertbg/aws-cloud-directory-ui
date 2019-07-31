@@ -25,7 +25,6 @@ There are two main editors, one for Schemas and another for the Directory. At th
 
 
 ## TODO / Wishlist
-- Test adding objects
 - Get typed link facets working
-- Get graph working
-- Schema diffing in editor
+- Traverse tree to populate graph
+- Collapse large directories in graph? Click to expand node?
