@@ -33,9 +33,14 @@ header > div {
   display: flex;
   flex-flow: row nowrap;
   justify-content: space-between;
+  align-items: stretch;
 }
 
-header > div > div, header > div > button {
+header > div > span {
+  align-self: center;
+}
+
+header > div > div, header > div > span, header > div > button {
   margin-left: .75rem;
 }
 
