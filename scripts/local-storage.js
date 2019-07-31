@@ -50,7 +50,7 @@ function setConfig() {
   }
 
   if (!localConfig.aws.region) {
-    localConfig.aws.region = prompt("What is the region you would like to use?");
+    localConfig.aws.region = prompt("Which AWS region would you like to use?");
     if (!(localConfig.aws.region && localConfig.aws.region.match(/[a-z]+-[a-z]+-[0-3]/))) {
       throw alert("Invalid region. Refresh to try again.");
     };
