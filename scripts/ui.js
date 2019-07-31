@@ -57,7 +57,7 @@ function tabClick(tab) {
 function generateSchemaVersions(versions) {
   $('#schema-versions select').empty();
   for (v of versions) {
-    const nsRegEx = new RegExp(`(${store.getItem('namespace')}.*)`);
+    const nsRegEx = new RegExp(`(${localConfig.namespace}.*)`);
     const shortName = v.split(nsRegEx)[1];
     const option = `<option value="${v}">${shortName}</option>`;
     $('#schema-versions select').append(option);
@@ -67,7 +67,7 @@ function generateSchemaVersions(versions) {
 
 function onDirectoryChange() {
   if (userDirectory.Schemas[userDirectory.Schemas.Current].Minor[0]) {
-    $('#schema-name input').val(`${store.getItem('namespace')}`);
+    $('#schema-name input').val(`${localConfig.namespace}`);
     $('#schema-mode input').val(`${userDirectory.Schemas.Current.toUpperCase()}`);
     generateSchemaVersions(userDirectory.Schemas[userDirectory.Schemas.Current].Minor);
     $('.schema-dev-only').each((i, el) => $(el).prop('disabled', userDirectory.Schemas.Current != 'Development'));
