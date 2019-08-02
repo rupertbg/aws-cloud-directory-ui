@@ -23,12 +23,15 @@ function checkConfig() {
     const msg = 'Stored config was invalid';
     console.warn(msg); toast(msg, 'yellow');
   } finally {
-    if (!storedConfig) storedConfig = {};
+    if (!storedConfig) {
+      storedConfig = {};
+      return false;
+    }
     for (var attr in localConfig.aws) {
-      if (!storedConfig.aws[attr]) return false;
+      if (!(storedConfig.aws && storedConfig.aws[attr])) return false;
     }
     for (var attr in localConfig.google) {
-      if (!storedConfig.google[attr]) return false;
+      if (!(storedConfig.google && storedConfig.google[attr])) return false;
     }
   }
   localConfig = storedConfig;

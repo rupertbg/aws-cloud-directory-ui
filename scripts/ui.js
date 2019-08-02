@@ -122,6 +122,7 @@ function initForceGraph() {
     .dagLevelDistance(150)
     .backgroundColor('#101020')
     .linkColor(() => 'rgba(255,255,255,0.2)')
+    .linkLabel(l =>l.targetNode.path)
     .nodeRelSize(nodeSize)
     .nodeId('path')
     .nodeVal('size')
@@ -143,7 +144,22 @@ function initForceGraph() {
     .d3VelocityDecay(0.1);
 
   $(window).resize(calcGraphDimensions);
-}
+};
+
+function runImmediately() {
+  checkConfig();
+  if (window.location.hostname === 'rupertbg.github.io') {
+    localConfig.google.aud = '441112355042-uc07t7cn3liql0d9i790bp29n3bjuias.apps.googleusercontent.com'
+  }
+  else if (!localConfig.google.aud) {
+    localConfig.google.aud = prompt("What is the your Client ID for Google Sign In?");
+    if (!localConfig.google.aud || !localConfig.google.aud.endsWith('.apps.googleusercontent.com')) {
+      return alert("Invalid Client ID. Refresh to try again.");
+    };
+  }
+  $('#google-client-id').attr('content', localConfig.google.aud);
+};
+runImmediately();
 
 function onReady() {
   $('#object-name').on('keyup', catchEnter(createObject));
@@ -164,18 +180,6 @@ function onReady() {
   initForceGraph();
 
   $(window).resize();
-
-  checkConfig();
-  if (window.location.hostname === 'rupertbg.github.io') {
-    localConfig.google.aud = '441112355042-uc07t7cn3liql0d9i790bp29n3bjuias.apps.googleusercontent.com'
-  }
-  else if (!localConfig.google.aud) {
-    localConfig.google.aud = prompt("What is the your Client ID for Google Sign In?");
-    if (!localConfig.google.aud || !localConfig.google.aud.endsWith('.apps.googleusercontent.com')) {
-      throw alert("Invalid Client ID. Refresh to try again.");
-    };
-  }
-  $('#google-client-id').attr('content', localConfig.google.aud);
 };
 
 async function onSignIn(gUser) {
