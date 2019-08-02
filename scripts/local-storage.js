@@ -48,14 +48,14 @@ function setConfig() {
   if (!localConfig.aws.role) {
     localConfig.aws.role = prompt("What is the ARN of the role you have deployed in your AWS account?");
     if (!localConfig.aws.role || !(localConfig.aws.role.startsWith('arn:') && localConfig.aws.role.includes('role/'))) {
-      throw alert("Invalid Role ARN. Refresh to try again.");
+      return alert("Invalid Role ARN. Refresh to try again.");
     };
   }
 
   if (!localConfig.aws.region) {
     localConfig.aws.region = prompt("Which AWS region would you like to use?");
     if (!(localConfig.aws.region && localConfig.aws.region.match(/[a-z]+-[a-z]+-[0-3]/))) {
-      throw alert("Invalid region. Refresh to try again.");
+      return alert("Invalid region. Refresh to try again.");
     };
   }
 
